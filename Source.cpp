@@ -1,3 +1,9 @@
+/*
+Steven Gagniere
+
+Assignment 1
+*/
+
 #include <iostream>
 #include <ctime>
 #include <cmath>
