@@ -78,7 +78,9 @@ void My_SVD(const Matrix2f &F, Matrix2f &U, Matrix2f &sigma, Matrix2f &V) {
 	U(1, 1) = c;
 
 	// Fixes sign of sigma
-	sigma(1, 1) = A(0, 1)*s + A(1, 1)*c; 
+	if ((A(0, 1)*s + A(1, 1)*c) < 0) {
+		sigma(1, 1) = -sigma(1, 1);
+	}
 
 	// Enforce sign conventions
 	if (V.determinant() < 0) {
@@ -95,13 +97,16 @@ void My_Polar(const Matrix3f &F, Matrix3f &R, Matrix3f &S) {
 	R = Matrix3f::Identity();
 	S = F;
 
-	float tol = .000001f; // Maximum error tolerance
-	int max_it = 10; // Maximum iteration number (if error is below tol)
+	float tol = .0000001f; // Error tolerance
+	int max_it = 15; // Maximum iteration number
 
 	float error = max(max(abs(S(1, 0) - S(0, 1)), abs(S(2, 0) - S(0, 2))), abs(S(2, 1) - S(1, 2)));
 
-	int it = 0;
-	while ((it < max_it) || (error > tol)) {
+	for (int it = 0; it < max_it; it++) {
+		if (error < tol) {
+			cout << "Ended at iteration " << it << endl;
+			break;
+		}
 		for (int i = 0; i < 2; i++) {
 			for (int j = i + 1; j <= 2; j++) {
 				// Givens rotation
@@ -113,13 +118,12 @@ void My_Polar(const Matrix3f &F, Matrix3f &R, Matrix3f &S) {
 				G(i, i) = G(j, j) = c;
 				G(i, j) = -s;
 				G(j, i) = s;
-				
+
 				// Update R and S
 				R = R*G;
 				S = G.transpose()*S;
 			}
 		}
-		it = it + 1;
 		error = max(max(abs(S(1, 0) - S(0, 1)), abs(S(2, 0) - S(0, 2))), abs(S(2, 1) - S(1, 2)));
 	}
 }
@@ -156,11 +160,17 @@ cout << "VTV: " << endl << V*V.transpose() << endl;
 cout << "Sigma: " << endl << sigma << endl;
 cout << "UEVT" << endl << U*sigma*V.transpose() << endl;
 cout << "Check Difference: " << endl << F - U*sigma*V.transpose() << endl;
+bool istrue = false;
+if (sigma(0, 0) >= abs(sigma(1, 1))) {
+istrue = true;
+}
+cout << istrue << endl;
 */
 
 /*
-sigma(0, 0) = 7.12;
-sigma(1, 1) = -7.11;
+float sig = (float)rand() / (RAND_MAX + 1));
+sigma(0, 0) = sig;
+sigma(1, 1) = sig;
 sigma(1, 0) = sigma(0, 1) = 0;
 
 float theta1 = ((float)rand() / (RAND_MAX + 1)) * 2 * 3.1415926535;
@@ -187,4 +197,29 @@ cout << "Det U: " << endl << U.determinant() << endl;
 cout << "Det V: " << endl << V.determinant() << endl;
 cout << "UTU: " << endl << U.transpose()*U << endl;
 cout << "VTV: " << endl << V.transpose()*V << endl;
+*/
+
+/*
+int it = 0;
+while ((it < max_it) || (error > tol)) {
+for (int i = 0; i < 2; i++) {
+for (int j = i + 1; j <= 2; j++) {
+// Givens rotation
+d = hypotf(S(i, i) + S(j, j), S(j, i) - S(i, j));
+c = (S(i, i) + S(j, j)) / d;
+s = (S(j, i) - S(i, j)) / d;
+
+G = Matrix3f::Identity();
+G(i, i) = G(j, j) = c;
+G(i, j) = -s;
+G(j, i) = s;
+
+// Update R and S
+R = R*G;
+S = G.transpose()*S;
+}
+}
+it = it + 1;
+error = max(max(abs(S(1, 0) - S(0, 1)), abs(S(2, 0) - S(0, 2))), abs(S(2, 1) - S(1, 2)));
+}
 */
